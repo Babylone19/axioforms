@@ -1,0 +1,1 @@
+ALTER TABLE "forms" ADD COLUMN "schema_draft" jsonb;

@@ -1,10 +1,10 @@
 import { buildApp } from "./app.js";
+import { registerRoutes } from "./routes/index.js";
 import { config } from "./config.js";
-import { healthRoutes } from "./routes/health.js";
 
 async function main(): Promise<void> {
   const app = await buildApp();
-  await app.register(healthRoutes);
+  await registerRoutes(app);
   try {
     await app.listen({ port: config.PORT, host: config.HOST });
   } catch (err) {

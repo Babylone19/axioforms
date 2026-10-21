@@ -11,6 +11,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
+    "key:create": "tsx scripts/create-key.ts",
     "typecheck": "tsc -b"
   },
   "dependencies": {

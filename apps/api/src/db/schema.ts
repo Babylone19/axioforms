@@ -35,6 +35,13 @@ export const forms = pgTable(
       .notNull()
       .default("draft"),
     webhookUrl: text("webhook_url"),
+    schemaDraft: jsonb("schema_draft")
+      .$type<{
+        schemaVersion: 1;
+        title: string;
+        description?: string;
+        fields: unknown[];
+      }>(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),

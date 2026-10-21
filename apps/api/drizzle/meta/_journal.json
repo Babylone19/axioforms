@@ -8,6 +8,13 @@
       "when": 1792531335133,
       "tag": "0000_slim_zuras",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792544466068,
+      "tag": "0001_tough_kitty_pryde",
+      "breakpoints": true
     }
   ]
 }
