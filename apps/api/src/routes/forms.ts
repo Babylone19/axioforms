@@ -11,14 +11,27 @@ const createFormBody = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional(),
   schema: schemaInput.optional(),
-  webhookUrl: z.string().url().optional(),
+  webhookUrl: z
+    .string()
+    .url()
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "L'URL du webhook doit être en http(s)",
+    })
+    .optional(),
 });
 
 const updateFormBody = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(2000).optional().nullable(),
   schema: schemaInput.optional(),
-  webhookUrl: z.string().url().nullable().optional(),
+  webhookUrl: z
+    .string()
+    .url()
+    .refine((u) => /^https?:\/\//i.test(u), {
+      message: "L'URL du webhook doit être en http(s)",
+    })
+    .nullable()
+    .optional(),
 });
 
 const formParams = z.object({ id: z.string().uuid() });

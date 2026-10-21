@@ -10,6 +10,7 @@ import {
 } from "@axioforms/shared";
 import { attachments, formVersions, forms, responses } from "../db/schema.js";
 import { config } from "../config.js";
+import { dispatchWebhook } from "../lib/webhooks.js";
 import {
   FileValidationError,
   removeStoredFiles,
@@ -260,6 +261,19 @@ export async function publicRoutes(app: FastifyInstance): Promise<void> {
           { formId: form.id, responseId: row.id },
           "Réponse enregistrée",
         );
+        void dispatchWebhook({
+          url: form.webhookUrl,
+          payload: {
+            event: "response.created",
+            formId: form.id,
+            formSlug: form.slug,
+            versionNumber: version.versionNumber,
+            responseId: row.id,
+            submittedAt: row.submittedAt.toISOString(),
+            data,
+          },
+          log: request.log,
+        });
         return reply.status(201).send({
           responseId: row.id,
           submittedAt: row.submittedAt,
