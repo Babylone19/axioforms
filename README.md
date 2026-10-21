@@ -35,9 +35,10 @@ consultation/export et webhooks. Exercice technique réalisé pour **Axio** — 
 - **Soumission** JSON ou `multipart/form-data` avec pièces jointes (contrôle de type
   MIME réel par sniffing d'octets, taille max globale et par champ, nom de stockage
   aléatoire).
-- **Espace d'administration** : liste des formulaires, éditeur JSON avec validation en
-  direct, aperçu interactif, publication, historique des versions, réponses paginées
-  avec téléchargement des pièces jointes et export CSV.
+- **Espace d'administration** : liste des formulaires, éditeur **visuel drag & drop**
+  (ajout/réordonnancement/édition des champs, validations et conditions) avec bascule
+  JSON validée en direct, aperçu interactif, publication, historique des versions,
+  réponses paginées avec téléchargement des pièces jointes et export CSV.
 - **API REST** protégée par clés (`X-API-Key`, HMAC-SHA256 + pepper, préfixe indexé),
   réponses d'erreur homogènes, rate limiting.
 - **Webhooks** : POST non bloquant à chaque réponse, statut enregistré
@@ -390,19 +391,21 @@ Seuls les tests d'intégration nécessitent Postgres démarré et migré.
 
 - [x] Schéma JSON en base, 10 types de champs, validations par champ, conditions
   (champs **et** sections), détection des cycles/références inconnues.
-- [x] Interface d'administration : création/édition JSON, aperçu interactif,
-  publication, historique des versions, liste des réponses, téléchargement, export.
+- [x] Interface d'administration : éditeur visuel drag & drop + JSON, aperçu
+  interactif, publication, historique des versions, liste des réponses,
+  téléchargement, export.
 - [x] Page publique par formulaire, validation client **et** serveur identiques,
   champs masqués ni exigés ni enregistrés.
 - [x] Pièces jointes : type MIME réel (sniffing), taille globale et par champ, stockage
   local, téléchargement protégé.
 - [x] Stockage des réponses liées à la version, API REST par clé (formulaires,
   réponses, pièces jointes), webhook par formulaire avec statut.
-- [x] Seed d'un formulaire d'exemple conditionnel, tests automatisés (88), README.
+- [x] Seed d'un formulaire d'exemple conditionnel, tests automatisés (103), README.
 
-**Bonus réalisés** : versionnage des formulaires, export CSV.
+**Bonus réalisés** : versionnage des formulaires, export CSV, éditeur visuel
+drag & drop.
 
-**Non réalisés (bonus)** : éditeur visuel drag & drop, génération de formulaire par
+**Non réalisés (bonus)** : génération de formulaire par
 LLM, formulaires multi-étapes avec sauvegarde, documentation OpenAPI séparée,
 déploiement en ligne (l'API et le front se lancent en local ; docker-compose ne couvre
 que PostgreSQL).
