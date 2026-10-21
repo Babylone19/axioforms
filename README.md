@@ -81,6 +81,38 @@ Le package `@axioforms/shared` est la clé de la cohérence : le **même** code 
 évalue les conditions côté client et côté serveur. Le serveur revalide toujours, y
 compris la visibilité, car le client n'est jamais digne de confiance.
 
+### Modèle de données
+
+```text
+api_keys
+  id uuid PK · name · key_prefix (unique) · key_hash · created_at · revoked_at
+
+forms
+  id uuid PK · slug (unique) · title · description · status (draft|published)
+  webhook_url · schema_draft jsonb · created_at · updated_at
+
+form_versions                     ← snapshot immuable du schéma publié
+  id uuid PK · form_id FK→forms (cascade) · version_number int
+  schema_json jsonb · created_at
+  UNIQUE(form_id, version_number)
+
+responses
+  id uuid PK · form_id FK→forms (cascade)
+  form_version_id FK→form_versions (restrict)   ← version utilisée
+  data jsonb · meta jsonb (ipHash, userAgent, webhookStatus) · submitted_at
+
+attachments
+  id uuid PK · response_id FK→responses (cascade) · field_id
+  filename · stored_path · mime_type · size_bytes · created_at
+```
+
+Relations : un formulaire a 0..N versions et 0..N réponses ; chaque réponse référence
+exactement une version (les réponses passées restent interprétables après édition) ;
+une réponse a 0..N pièces jointes dont les octets vivent sur disque (`UPLOAD_DIR`), la
+base ne gardant que les métadonnées. Index principaux : `forms.status`,
+`responses(form_id, submitted_at)`, `responses.form_version_id`,
+`attachments.response_id`, `api_keys.key_prefix`.
+
 ## Démarrage rapide
 
 Prérequis : Node.js ≥ 20, npm, Docker.
@@ -351,6 +383,29 @@ Seuls les tests d'intégration nécessitent Postgres démarré et migré.
   d'un service tiers ; le statut est visible dans les métadonnées.
 - **Front sans framework UI** : CSS simple, composants React natifs, pour rester lisible
   et rapide à évaluer.
+
+## État du MVP
+
+**Terminé et vérifié** (détail dans les sections précédentes) :
+
+- [x] Schéma JSON en base, 10 types de champs, validations par champ, conditions
+  (champs **et** sections), détection des cycles/références inconnues.
+- [x] Interface d'administration : création/édition JSON, aperçu interactif,
+  publication, historique des versions, liste des réponses, téléchargement, export.
+- [x] Page publique par formulaire, validation client **et** serveur identiques,
+  champs masqués ni exigés ni enregistrés.
+- [x] Pièces jointes : type MIME réel (sniffing), taille globale et par champ, stockage
+  local, téléchargement protégé.
+- [x] Stockage des réponses liées à la version, API REST par clé (formulaires,
+  réponses, pièces jointes), webhook par formulaire avec statut.
+- [x] Seed d'un formulaire d'exemple conditionnel, tests automatisés (88), README.
+
+**Bonus réalisés** : versionnage des formulaires, export CSV.
+
+**Non réalisés (bonus)** : éditeur visuel drag & drop, génération de formulaire par
+LLM, formulaires multi-étapes avec sauvegarde, documentation OpenAPI séparée,
+déploiement en ligne (l'API et le front se lancent en local ; docker-compose ne couvre
+que PostgreSQL).
 
 ## Limites connues
 
