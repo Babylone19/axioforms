@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormField } from "@axioforms/shared";
 import {
   downloadAttachment,
   downloadCsv,
@@ -66,14 +67,31 @@ export default function ResponsesView({
     void load();
   }, [load]);
 
-  const labels = useMemo(() => {
-    const map = new Map<string, string>();
-    const schema = form?.schema as { fields?: { id: string; label: string }[] } | null;
+  const fieldsById = useMemo(() => {
+    const map = new Map<string, FormField>();
+    const schema = form?.schema as { fields?: FormField[] } | null;
     for (const field of schema?.fields ?? []) {
-      map.set(field.id, field.label);
+      map.set(field.id, field);
     }
     return map;
   }, [form]);
+
+  const labels = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const [id, field] of fieldsById) map.set(id, field.label);
+    return map;
+  }, [fieldsById]);
+
+  const renderFieldValue = (fieldId: string, value: unknown): string => {
+    const options = fieldsById.get(fieldId)?.options ?? [];
+    const labelOf = (raw: unknown) =>
+      options.find((option) => option.value === raw)?.label ?? String(raw);
+    if (Array.isArray(value)) {
+      return value.length > 0 ? value.map(labelOf).join(", ") : "—";
+    }
+    if (typeof value === "string" && options.length > 0) return labelOf(value);
+    return renderValue(value);
+  };
 
   const columns = useMemo(() => {
     const keys: string[] = [];
@@ -185,7 +203,9 @@ export default function ResponsesView({
                     <td className="small">{formatDate(item.submittedAt)}</td>
                     <td className="small">v{item.versionNumber}</td>
                     {columns.map((column) => (
-                      <td key={column}>{renderValue(item.data[column])}</td>
+                      <td key={column}>
+                        {renderFieldValue(column, item.data[column])}
+                      </td>
                     ))}
                     <td>
                       {item.attachments.length === 0 ? (
