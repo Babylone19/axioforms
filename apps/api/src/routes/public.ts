@@ -64,6 +64,7 @@ async function parseSubmission(request: {
       fieldname: string;
       value?: string;
       filename?: string;
+      mimetype?: string;
       toBuffer: () => Promise<Buffer>;
       file?: { truncated: boolean };
     };

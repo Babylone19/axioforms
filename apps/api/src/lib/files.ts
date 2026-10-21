@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileTypeFromBuffer } from "file-type";
-import type { FormField, FormSchema } from "@axioforms/shared";
+import type { FormField } from "@axioforms/shared";
 import { config } from "../config.js";
 
 export interface IncomingFile {
