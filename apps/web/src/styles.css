@@ -395,11 +395,6 @@ code {
 .table-scroll {
   overflow-x: auto;
   border-radius: 12px;
-  scrollbar-width: none;
-}
-
-.table-scroll::-webkit-scrollbar {
-  display: none;
 }
 
 .table-scroll .table {
@@ -539,6 +534,16 @@ code {
   top: 4.5rem;
   max-height: calc(100vh - 6rem);
   overflow-y: auto;
+}
+
+.admin-main,
+.json-editor {
+  scrollbar-width: none;
+}
+
+.admin-main::-webkit-scrollbar,
+.json-editor::-webkit-scrollbar {
+  display: none;
 }
 
 .pagination {
@@ -737,4 +742,16 @@ code {
 
 .advanced > *:not(summary) {
   margin-top: 0.6rem;
+}
+
+/* Barres de défilement masquées partout : le scroll reste possible, la barre non. */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
