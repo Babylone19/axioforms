@@ -145,10 +145,43 @@ const demoSchema: FormSchema = {
   ],
 };
 
-const PDF_BYTES = Buffer.from(
-  "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n",
-  "utf-8",
-);
+function buildDemoPdf(): Buffer {
+  const lines = [
+    "BT",
+    "/F1 18 Tf",
+    "48 205 Td",
+    "(Contrat ACME - exemple) Tj",
+    "/F1 11 Tf",
+    "0 -28 Td",
+    "(Piece jointe de demonstration generee par AxioForms.) Tj",
+    "0 -18 Td",
+    "(Client : Acme SA - Montant : 24 000 EUR) Tj",
+    "ET",
+  ];
+  const stream = lines.join("\n");
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 420 260] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+    `<< /Length ${Buffer.byteLength(stream, "latin1")} >>\nstream\n${stream}\nendstream`,
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objects.forEach((body, index) => {
+    offsets.push(Buffer.byteLength(pdf, "latin1"));
+    pdf += `${index + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xrefOffset = Buffer.byteLength(pdf, "latin1");
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (const offset of offsets) {
+    pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  }
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  return Buffer.from(pdf, "latin1");
+}
+
+const PDF_BYTES = buildDemoPdf();
 
 async function main(): Promise<void> {
   const schema = parseFormSchema(demoSchema);

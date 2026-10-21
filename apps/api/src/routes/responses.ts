@@ -25,14 +25,20 @@ function notFound(message: string) {
   return { error: { code: "NOT_FOUND", message } };
 }
 
-function csvCell(value: unknown): string {
+const CSV_DELIMITER = ";";
+
+function csvCell(value: unknown, delimiter = CSV_DELIMITER): string {
   if (value === null || value === undefined) return "";
   const text = Array.isArray(value)
-    ? value.join("; ")
+    ? value.join(" | ")
     : typeof value === "object"
-      ? JSON.stringify(value)
+      ? typeof (value as { filename?: unknown }).filename === "string"
+        ? (value as { filename: string }).filename
+        : JSON.stringify(value)
       : String(value);
-  if (/[",\r\n]/.test(text)) {
+  const needsQuotes =
+    text.includes(delimiter) || /["\r\n]/.test(text);
+  if (needsQuotes) {
     return `"${text.replace(/"/g, '""')}"`;
   }
   return text;
@@ -154,7 +160,7 @@ export async function responseRoutes(app: FastifyInstance): Promise<void> {
     }
 
     const header = ["response_id", "submitted_at", "version", ...fieldIds];
-    const lines = [header.map(csvCell).join(",")];
+    const lines = [header.map((cell) => csvCell(cell)).join(CSV_DELIMITER)];
     for (const row of rows) {
       lines.push(
         [
@@ -163,11 +169,11 @@ export async function responseRoutes(app: FastifyInstance): Promise<void> {
           row.versionNumber,
           ...fieldIds.map((fieldId) => row.data[fieldId]),
         ]
-          .map(csvCell)
-          .join(","),
+          .map((cell) => csvCell(cell))
+          .join(CSV_DELIMITER),
       );
     }
-    const csv = `${lines.join("\r\n")}\r\n`;
+    const csv = `\uFEFF${lines.join("\r\n")}\r\n`;
 
     reply.header("Content-Type", "text/csv; charset=utf-8");
     reply.header(

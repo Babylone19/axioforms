@@ -95,13 +95,16 @@ export default function ResponsesView({
 
   const columns = useMemo(() => {
     const keys: string[] = [];
+    for (const field of fieldsById.values()) {
+      if (field.type !== "section") keys.push(field.id);
+    }
     for (const item of page?.items ?? []) {
       for (const key of Object.keys(item.data)) {
         if (!keys.includes(key)) keys.push(key);
       }
     }
     return keys;
-  }, [page]);
+  }, [fieldsById, page]);
 
   const exportCsv = async () => {
     if (!form) return;
@@ -200,14 +203,18 @@ export default function ResponsesView({
               <tbody>
                 {(page?.items ?? []).map((item) => (
                   <tr key={item.id}>
-                    <td className="small">{formatDate(item.submittedAt)}</td>
-                    <td className="small">v{item.versionNumber}</td>
+                    <td className="small" data-label="Date">
+                      {formatDate(item.submittedAt)}
+                    </td>
+                    <td className="small" data-label="Version">
+                      v{item.versionNumber}
+                    </td>
                     {columns.map((column) => (
-                      <td key={column}>
+                      <td key={column} data-label={labels.get(column) ?? column}>
                         {renderFieldValue(column, item.data[column])}
                       </td>
                     ))}
-                    <td>
+                    <td data-label="Pièces jointes">
                       {item.attachments.length === 0 ? (
                         <span className="muted">—</span>
                       ) : (

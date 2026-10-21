@@ -263,9 +263,10 @@ describe("GET /api/forms/:id/responses/export.csv", () => {
     expect(res.statusCode).toBe(200);
     expect(res.headers["content-type"]).toContain("text/csv");
     expect(res.headers["content-disposition"]).toMatch(/contact-demo-[a-z0-9]+-responses\.csv/);
-    const lines = res.body.trimEnd().split("\r\n");
+    expect(res.body.startsWith("\uFEFF")).toBe(true);
+    const lines = res.body.replace(/^\uFEFF/, "").trimEnd().split("\r\n");
     expect(lines).toHaveLength(4);
-    const header = lines[0]!.split(",");
+    const header = lines[0]!.split(";");
     expect(header.slice(0, 3)).toEqual(["response_id", "submitted_at", "version"]);
     expect(header).toContain("name");
     expect(header).toContain("source");

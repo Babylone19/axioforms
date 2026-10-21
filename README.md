@@ -38,7 +38,8 @@ consultation/export et webhooks. Exercice technique réalisé pour **Axio** — 
 - **Espace d'administration** : liste des formulaires, éditeur **visuel drag & drop**
   (ajout/réordonnancement/édition des champs, validations et conditions) avec bascule
   JSON validée en direct, aperçu interactif, publication, historique des versions,
-  réponses paginées avec téléchargement des pièces jointes et export CSV.
+  réponses paginées (tableau responsive : colonnes alignées sur le schéma, cartes
+  empilées sur mobile) avec téléchargement des pièces jointes et export CSV.
 - **API REST** protégée par clés (`X-API-Key`, HMAC-SHA256 + pepper, préfixe indexé),
   réponses d'erreur homogènes, rate limiting.
 - **Webhooks** : POST non bloquant à chaque réponse, statut enregistré
@@ -255,7 +256,7 @@ Base : `http://localhost:3000`. Toutes les routes privées exigent l'en-tête
 |---------|-------|-------------|
 | GET | `/api/forms/:id/responses?limit=20&offset=0&version=1&since=2026-01-01T00:00:00Z` | Liste paginée (max 100) |
 | GET | `/api/forms/:id/responses/:responseId` | Détail + pièces jointes (URLs) |
-| GET | `/api/forms/:id/responses/export.csv` | Export CSV (colonnes = union des champs) |
+| GET | `/api/forms/:id/responses/export.csv` | Export CSV (`;`, UTF-8 BOM, colonnes = union des champs) |
 | GET | `/api/attachments/:id` | Téléchargement d'une pièce jointe |
 
 ### Public

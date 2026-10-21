@@ -377,6 +377,7 @@ code {
   padding: 0.65rem 0.9rem;
   border-bottom: 1px solid var(--border);
   vertical-align: top;
+  overflow-wrap: anywhere;
 }
 
 .table th {
@@ -394,10 +395,68 @@ code {
 .table-scroll {
   overflow-x: auto;
   border-radius: 12px;
+  scrollbar-width: none;
+}
+
+.table-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .table-scroll .table {
-  min-width: 640px;
+  min-width: 0;
+}
+
+@media (max-width: 820px) {
+  .table-scroll {
+    overflow: visible;
+  }
+
+  .table {
+    border: none;
+    background: transparent;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+
+  .table tbody tr {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+  }
+
+  .table td {
+    padding: 0.55rem 0.85rem;
+  }
+
+  .table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-bottom: 0.15rem;
+  }
+
+  .table tbody tr:last-child td {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table tbody tr td:last-child {
+    border-bottom: none;
+  }
 }
 
 .badge {
