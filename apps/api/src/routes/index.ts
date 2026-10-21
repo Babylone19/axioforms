@@ -4,6 +4,7 @@ import { keyRoutes } from "./keys.js";
 import { formRoutes } from "./forms.js";
 import { versionRoutes } from "./versions.js";
 import { publicRoutes } from "./public.js";
+import { attachmentRoutes } from "./attachments.js";
 import { requireApiKey } from "../plugins/auth.js";
 
 export async function registerRoutes(app: FastifyInstance): Promise<void> {
@@ -14,5 +15,6 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     await scoped.register(keyRoutes);
     await scoped.register(formRoutes);
     await scoped.register(versionRoutes);
+    await scoped.register(attachmentRoutes);
   });
 }

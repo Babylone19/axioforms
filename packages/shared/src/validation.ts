@@ -99,9 +99,11 @@ function buildFieldSchema(field: FormField): z.ZodTypeAny {
       return base;
     }
     case "file": {
-      const uuidSchema = z.string().uuid(
-        v?.errorText ?? `Le champ « ${field.label} » exige un fichier téléversé`,
-      );
+      const uuidSchema = z
+        .string({ message: requiredMessage(field) })
+        .uuid(
+          v?.errorText ?? `Le champ « ${field.label} » exige un fichier téléversé`,
+        );
       base = field.required ? uuidSchema : uuidSchema.optional();
       return base;
     }

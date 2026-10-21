@@ -11,6 +11,7 @@
     "dev:web": "npm run dev -w apps/web",
     "build": "npm run build -w packages/shared && npm run build -w apps/api && npm run build -w apps/web",
     "test": "vitest run",
+    "pretest": "npm run build -w packages/shared",
     "test:watch": "vitest",
     "typecheck": "tsc -b",
     "db:generate": "npm run db:generate -w apps/api",

@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
+import multipart from "@fastify/multipart";
 import { config } from "./config.js";
 import { db, type Database } from "./db/index.js";
 import { registerErrorHandler } from "./plugins/errors.js";
@@ -33,6 +34,13 @@ export async function buildApp(deps: AppDeps = {}): Promise<FastifyInstance> {
     global: true,
     max: 200,
     timeWindow: "1 minute",
+  });
+  await app.register(multipart, {
+    limits: {
+      fileSize: config.MAX_UPLOAD_SIZE_BYTES,
+      files: 5,
+      fields: 50,
+    },
   });
 
   registerErrorHandler(app);
