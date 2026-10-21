@@ -304,8 +304,13 @@ describe("Téléchargement de pièce jointe", () => {
   let attachmentId: string;
 
   beforeAll(async () => {
-    const [row] = await db.select().from(attachments).limit(1);
-    attachmentId = row!.id;
+    const rows = await db
+      .select({ id: attachments.id })
+      .from(attachments)
+      .innerJoin(responses, eq(attachments.responseId, responses.id))
+      .where(eq(responses.formId, createdFormIds[0]!))
+      .limit(1);
+    attachmentId = rows[0]!.id;
   });
 
   it("integration: sans clé API → 401", async () => {
