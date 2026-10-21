@@ -78,7 +78,7 @@ afterAll(async () => {
 
 describe("GET /f/:slug", () => {
   it("integration: formulaire publié accessible sans clé API", async () => {
-    const res = await app.inject({ method: "GET", url: `/f/${slug}` });
+    const res = await app.inject({ method: "GET", url: `/api/public/f/${slug}` });
     expect(res.statusCode).toBe(200);
     const body = res.json();
     expect(body.title).toBe("Onboarding client");
@@ -87,7 +87,7 @@ describe("GET /f/:slug", () => {
   });
 
   it("integration: slug inexistant → 404", async () => {
-    const res = await app.inject({ method: "GET", url: "/f/inexistant" });
+    const res = await app.inject({ method: "GET", url: "/api/public/f/inexistant" });
     expect(res.statusCode).toBe(404);
   });
 });
@@ -96,7 +96,7 @@ describe("POST /f/:slug/responses", () => {
   it("integration: soumission valide → 201 et réponse stockée liée à la version", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: {
         answers: {
           client_type: "entreprise",
@@ -123,7 +123,7 @@ describe("POST /f/:slug/responses", () => {
   it("validation: email invalide → 400 VALIDATION_FAILED avec details par champ", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: {
         answers: { client_type: "particulier", email: "pas-un-email" },
       },
@@ -137,7 +137,7 @@ describe("POST /f/:slug/responses", () => {
   it("validation: champ obligatoire masqué non fourni → 201 (ni exigé)", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: {
         answers: { client_type: "particulier", email: "jane@example.com" },
       },
@@ -154,7 +154,7 @@ describe("POST /f/:slug/responses", () => {
   it("validation: champ masqué fourni volontairement → strippé (ni enregistré)", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: {
         answers: {
           client_type: "particulier",
@@ -176,7 +176,7 @@ describe("POST /f/:slug/responses", () => {
   it("validation: pattern TVA invalide sur champ visible → 400 avec errorText", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: {
         answers: {
           client_type: "entreprise",
@@ -193,7 +193,7 @@ describe("POST /f/:slug/responses", () => {
   it("validation: valeur hors options select → 400", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: { answers: { client_type: "alien", email: "a@b.co" } },
     });
     expect(res.statusCode).toBe(400);
@@ -211,7 +211,7 @@ describe("POST /f/:slug/responses", () => {
     createdFormIds.push(created.json().id);
     const res = await app.inject({
       method: "POST",
-      url: `/f/${draftSlug}/responses`,
+      url: `/api/public/f/${draftSlug}/responses`,
       payload: { answers: { client_type: "particulier", email: "x@y.zz" } },
     });
     expect(res.statusCode).toBe(404);

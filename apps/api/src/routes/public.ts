@@ -100,7 +100,7 @@ async function parseSubmission(request: {
 
 export async function publicRoutes(app: FastifyInstance): Promise<void> {
   app.get(
-    "/f/:slug",
+    "/api/public/f/:slug",
     { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const { slug } = slugParams.parse(request.params);
@@ -133,7 +133,7 @@ export async function publicRoutes(app: FastifyInstance): Promise<void> {
   );
 
   app.post(
-    "/f/:slug/responses",
+    "/api/public/f/:slug/responses",
     { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
     async (request, reply) => {
       const { slug } = slugParams.parse(request.params);

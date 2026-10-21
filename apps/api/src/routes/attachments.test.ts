@@ -159,7 +159,7 @@ describe("Soumission multipart avec pièces jointes", () => {
     );
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       headers,
       payload,
     });
@@ -196,7 +196,7 @@ describe("Soumission multipart avec pièces jointes", () => {
     );
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       headers,
       payload,
     });
@@ -225,7 +225,7 @@ describe("Soumission multipart avec pièces jointes", () => {
     );
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       headers,
       payload,
     });
@@ -236,7 +236,7 @@ describe("Soumission multipart avec pièces jointes", () => {
   it("validation: fichier obligatoire manquant → 400", async () => {
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       payload: { answers: { name: "Ada", client_type: "particulier" } },
     });
     expect(res.statusCode).toBe(400);
@@ -263,7 +263,7 @@ describe("Soumission multipart avec pièces jointes", () => {
     );
     const res = await app.inject({
       method: "POST",
-      url: `/f/${slug}/responses`,
+      url: `/api/public/f/${slug}/responses`,
       headers,
       payload,
     });
