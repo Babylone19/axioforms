@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: axioforms-postgres
+    environment:
+      POSTGRES_USER: axioforms
+      POSTGRES_PASSWORD: axioforms
+      POSTGRES_DB: axioforms
+    ports:
+      - "5433:5432"
+    volumes:
+      - axioforms_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U axioforms -d axioforms"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  axioforms_pgdata:
