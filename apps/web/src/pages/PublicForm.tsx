@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import {
   evaluateVisibility,
   parseFormSchema,
@@ -6,6 +7,7 @@ import {
   type FieldErrors,
   type FormSchema,
 } from "@axioforms/shared";
+import FormFields from "../components/FormFields.js";
 import { ApiError, fetchPublicForm, submitPublicForm } from "../lib/api.js";
 
 const FILE_PLACEHOLDER = "00000000-0000-4000-8000-000000000000";
@@ -16,15 +18,6 @@ type Status =
   | { phase: "ready" }
   | { phase: "submitting" }
   | { phase: "done" };
-
-function fileFieldErrorMessage(
-  required: boolean,
-  label: string,
-  hasFile: boolean,
-): string | undefined {
-  if (required && !hasFile) return `Le champ « ${label} » exige un fichier`;
-  return undefined;
-}
 
 export default function PublicForm({ slug }: { slug: string }) {
   const [status, setStatus] = useState<Status>({ phase: "loading" });
@@ -75,6 +68,10 @@ export default function PublicForm({ slug }: { slug: string }) {
     setAnswers((prev) => ({ ...prev, [fieldId]: value }));
   }, []);
 
+  const setFile = useCallback((fieldId: string, file: File | null) => {
+    setFiles((prev) => ({ ...prev, [fieldId]: file }));
+  }, []);
+
   const computeErrors = useCallback(
     (
       ans: Record<string, unknown>,
@@ -96,19 +93,16 @@ export default function PublicForm({ slug }: { slug: string }) {
       const errs: FieldErrors = result.ok ? {} : { ...result.errors };
       for (const field of schema.fields) {
         if (field.type !== "file" || !vis.has(field.id)) continue;
-        const msg = fileFieldErrorMessage(
-          Boolean(field.required),
-          field.label,
-          fileMap[field.id] != null,
-        );
-        if (msg) errs[field.id] = msg;
+        if (field.required && fileMap[field.id] == null) {
+          errs[field.id] = `Le champ « ${field.label} » exige un fichier`;
+        }
       }
       return errs;
     },
     [schema],
   );
 
-  const onSubmit = async (event: React.FormEvent) => {
+  const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!schema) return;
     setSubmitAttempted(true);
@@ -130,7 +124,11 @@ export default function PublicForm({ slug }: { slug: string }) {
           withPlaceholders[field.id] = FILE_PLACEHOLDER;
         }
       }
-      await submitPublicForm(slug, withPlaceholders, files as Record<string, File>);
+      await submitPublicForm(
+        slug,
+        withPlaceholders,
+        files as Record<string, File>,
+      );
       setStatus({ phase: "done" });
     } catch (e) {
       setStatus({ phase: "ready" });
@@ -192,159 +190,21 @@ export default function PublicForm({ slug }: { slug: string }) {
           </p>
         )}
 
-        {schema.fields.map((field) => {
-          if (!visible.has(field.id)) return null;
+        <FormFields
+          schema={schema}
+          visible={visible}
+          answers={answers}
+          setValue={setValue}
+          setFile={setFile}
+          errors={errors}
+          showAllErrors={submitAttempted}
+        />
 
-          if (field.type === "section") {
-            return (
-              <section key={field.id} className="form-section" data-field={field.id}>
-                <h2>{field.label}</h2>
-                {field.description && <p className="muted">{field.description}</p>}
-              </section>
-            );
-          }
-
-          const error = submitAttempted || errors[field.id] ? errors[field.id] : undefined;
-          const describedBy = error ? `err-${field.id}` : undefined;
-
-          return (
-            <div key={field.id} className="field" data-field={field.id}>
-              {field.type !== "checkbox" && field.type !== "radio" && (
-                <label htmlFor={`f-${field.id}`}>
-                  {field.label}
-                  {field.required && <span aria-hidden="true"> *</span>}
-                </label>
-              )}
-              {field.description && <p className="muted small">{field.description}</p>}
-
-              {field.type === "text" || field.type === "email" || field.type === "date" ? (
-                <input
-                  id={`f-${field.id}`}
-                  type={field.type === "text" ? "text" : field.type}
-                  value={(answers[field.id] as string) ?? ""}
-                  onChange={(e) => setValue(field.id, e.target.value)}
-                  placeholder={field.placeholder}
-                  required={field.required}
-                  minLength={field.validation?.minLength}
-                  maxLength={field.validation?.maxLength}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                />
-              ) : field.type === "textarea" ? (
-                <textarea
-                  id={`f-${field.id}`}
-                  rows={4}
-                  value={(answers[field.id] as string) ?? ""}
-                  onChange={(e) => setValue(field.id, e.target.value)}
-                  placeholder={field.placeholder}
-                  maxLength={field.validation?.maxLength}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                />
-              ) : field.type === "number" ? (
-                <input
-                  id={`f-${field.id}`}
-                  type="number"
-                  value={(answers[field.id] as number | string) ?? ""}
-                  onChange={(e) =>
-                    setValue(
-                      field.id,
-                      e.target.value === "" ? "" : Number(e.target.value),
-                    )
-                  }
-                  min={field.validation?.min}
-                  max={field.validation?.max}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                />
-              ) : field.type === "select" ? (
-                <select
-                  id={`f-${field.id}`}
-                  value={(answers[field.id] as string) ?? ""}
-                  onChange={(e) => setValue(field.id, e.target.value)}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                >
-                  <option value="">— Choisir —</option>
-                  {(field.options ?? []).map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              ) : field.type === "radio" ? (
-                <div
-                  role="radiogroup"
-                  aria-label={field.label}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                >
-                  {(field.options ?? []).map((opt) => (
-                    <label key={opt.value} className="choice">
-                      <input
-                        type="radio"
-                        name={field.id}
-                        value={opt.value}
-                        checked={answers[field.id] === opt.value}
-                        onChange={() => setValue(field.id, opt.value)}
-                      />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-              ) : field.type === "checkbox" ? (
-                <div
-                  role="group"
-                  aria-label={field.label}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                >
-                  {(field.options ?? []).map((opt) => {
-                    const list = (answers[field.id] as string[] | undefined) ?? [];
-                    const checked = list.includes(opt.value);
-                    return (
-                      <label key={opt.value} className="choice">
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() =>
-                            setValue(
-                              field.id,
-                              checked
-                                ? list.filter((v) => v !== opt.value)
-                                : [...list, opt.value],
-                            )
-                          }
-                        />
-                        {opt.label}
-                      </label>
-                    );
-                  })}
-                </div>
-              ) : field.type === "file" ? (
-                <input
-                  id={`f-${field.id}`}
-                  type="file"
-                  accept={field.validation?.acceptedMimeTypes?.join(",")}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null;
-                    setFiles((prev) => ({ ...prev, [field.id]: file }));
-                  }}
-                  aria-invalid={Boolean(error)}
-                  aria-describedby={describedBy}
-                />
-              ) : null}
-
-              {error && (
-                <p className="field-error" id={`err-${field.id}`} role="alert">
-                  {error}
-                </p>
-              )}
-            </div>
-          );
-        })}
-
-        <button type="submit" className="submit" disabled={status.phase === "submitting"}>
+        <button
+          type="submit"
+          className="submit"
+          disabled={status.phase === "submitting"}
+        >
           {status.phase === "submitting" ? "Envoi en cours…" : "Envoyer"}
         </button>
       </form>

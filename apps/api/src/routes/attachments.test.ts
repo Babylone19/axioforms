@@ -123,13 +123,31 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const rows = await db.select().from(attachments);
+  const rows = await db
+    .select()
+    .from(attachments)
+    .where(
+      inArray(
+        attachments.responseId,
+        db
+          .select({ id: responses.id })
+          .from(responses)
+          .where(inArray(responses.formId, createdFormIds)),
+      ),
+    );
   for (const row of rows) {
     await fs.rm(path.join(config.UPLOAD_DIR, row.storedPath), { force: true });
   }
-  await db.delete(attachments);
-  await db.delete(responses).where(inArray(responses.formId, createdFormIds));
+  if (rows.length > 0) {
+    await db.delete(attachments).where(
+      inArray(
+        attachments.id,
+        rows.map((r) => r.id),
+      ),
+    );
+  }
   if (createdFormIds.length > 0) {
+    await db.delete(responses).where(inArray(responses.formId, createdFormIds));
     await db.delete(formVersions).where(inArray(formVersions.formId, createdFormIds));
     await db.delete(forms).where(inArray(forms.id, createdFormIds));
   }
